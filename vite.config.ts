@@ -6,6 +6,10 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: mode === "production" ? "/qr-push-events/" : "/",
+  build: {
+    outDir: "docs",
+  },
   server: {
     host: "::",
     port: 8080,

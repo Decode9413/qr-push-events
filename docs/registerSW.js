@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/qr-push-events/sw.js', { scope: '/qr-push-events/' })})}
