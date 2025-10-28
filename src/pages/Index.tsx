@@ -4,6 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Bell, QrCode, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import QrScanner from "@/components/QrScanner";
+import {
+  getPushSubscriptionPayload,
+  PushSubscriptionError,
+} from "@/lib/push-subscription";
 
 type AppState = "permission" | "scan" | "events";
 
@@ -52,22 +56,47 @@ const Index = () => {
 
   const handleQrScan = async (url: string) => {
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const subscription = await getPushSubscriptionPayload();
 
-      if (response.ok) {
-        toast.success("QR code registered");
+      let clipboardCopied = false;
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(
+            JSON.stringify(subscription, null, 2)
+          );
+          clipboardCopied = true;
+        } catch {
+          clipboardCopied = false;
+        }
+      }
+
+      // const response = await fetch(url, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     subscription,
+      //   }),
+      // });
+
+      // if (response.ok) {
+        toast.success(
+          clipboardCopied
+            ? "QR code registered. Subscription copied to clipboard."
+            : "QR code registered"
+        );
         setState("events");
         setIsScanning(false);
-      } else {
-        toast.error("Failed to register QR code");
-      }
+      // } else {
+      //   toast.error("Failed to register QR code");
+      // }
     } catch (error) {
-      toast.error("Failed to send request");
+      if (error instanceof PushSubscriptionError) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to send request");
+      }
     }
   };
 
